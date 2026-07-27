@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wazuh + cowrie siem — thisisawebsite.fyi</title>
+<meta name="description" content="Writeup: building a Wazuh SIEM paired with a Cowrie SSH honeypot on Oracle Cloud — what it caught, what broke, and what it taught me about leaving things public.">
+<meta property="og:title" content="wazuh + cowrie siem">
+<meta property="og:description" content="Writeup: building a Wazuh SIEM paired with a Cowrie SSH honeypot on Oracle Cloud — what it caught, what broke, and what it taught me about leaving things public.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://thisisawebsite.fyi/projects.html">
+<meta property="og:image" content="https://thisisawebsite.fyi/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div class="crt">
+  <div class="screen">
+    <div class="titlebar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="path">root@sentinel : ~/projects</span>
+    </div>
+    <nav class="tabnav">
+      <a href="index.html">~/</a>
+      <a href="resume.html">resume</a>
+      <a href="projects.html" class="active">projects</a>
+      <a href="uses.html">uses</a>
+      <a href="guestbook.html">guestbook</a>
+    </nav>
+    <div class="page">
+      <article>
+        <h1>Building a SIEM to Watch My Own Front Door</h1>
+        <p class="subtitle">What I built, what it caught, and what it taught me about leaving things public</p>
+
+        <h2>The Setup</h2>
+        <p>This started as a class project — my Linux professor let us build anything we found genuinely
+        interesting, and mine turned into a full Wazuh SIEM deployment: manager, indexer, and dashboard
+        running on terminus, paired with a Cowrie SSH honeypot on a fresh Oracle Cloud ARM instance I spun
+        up specifically for this, kept isolated from anything I actually cared about protecting. The
+        professor liked it enough to suggest I bring it to the department's cybersecurity showcase, so what
+        started as a class assignment became something I actually had to explain to other people.</p>
+
+        <h2>What It Caught</h2>
+        <p>Cowrie ran for a little over a week. In that time, it logged somewhere around 3,000 attempts —
+        mostly SSH, with a handful of HTTPS/TLS connections oddly aimed at port 22 as well. Nothing about it
+        looked targeted or manual; it read exactly like automated scanning, the kind of background noise
+        that's apparently just constantly hitting anything with a public IP. Sources were scattered
+        globally, no single region dominating once I had GeoIP enrichment wired in. The one pattern that did
+        stand out: activity clustered noticeably around early morning hours on my end — whether that says
+        something about attacker time zones or just how bot scheduling works, I don't fully know.</p>
+
+        <h2>Tuning Out the Noise</h2>
+        <p>Out of the box, Wazuh alerts on everything, and between Cowrie's constant honeypot traffic and my
+        own routine SSH/Pi-hole activity, that meant a flood of alerts within the first day that told me
+        almost nothing useful. I wrote suppression rules filtering by Cowrie-specific traffic so the noise
+        from my own legitimate activity stopped burying anything worth actually looking at. It's not a
+        glamorous part of the project, but it's the difference between a SIEM that alerts and a SIEM you can
+        actually use.</p>
+
+        <h2>What Broke</h2>
+        <p>The honest answer: my own hardware. Running the full Wazuh stack — manager, indexer, and
+        dashboard — on terminus started eating enough RAM that it slowed down everything else on that box,
+        including its job as my Tailscale exit node, which meant it was dragging down my other devices too.
+        Once the showcase was over, I shut it down for exactly that reason — no analyst benefit left to
+        justify the resource cost.</p>
+
+        <h2>What I'd Do Differently</h2>
+        <p>Run it on more capable hardware, and wait until I actually had more public-facing infrastructure
+        worth monitoring before building the SIEM around it. A single honeypot on an isolated box gets you
+        interesting attack data, but a real deployment earns its keep watching things that actually
+        matter.</p>
+
+        <h2>What It Actually Changed</h2>
+        <p>This is the part that stuck with me most. I'd run a public-facing website on a Raspberry Pi for a
+        while before this project — no real hardening, no monitoring, updates whenever I remembered. It
+        never got hacked. But I also had no idea what "never got hacked" actually meant, because I'd never
+        looked. Watching real attack traffic hit a box in real time, at the volume it did, over just a week,
+        made the abstract idea of "the internet is hostile by default" into something I'd actually seen with
+        my own logs. I don't leave things running unmonitored and unpatched anymore — not because I got
+        burned, but because I finally understand what "fine, so far" was actually resting on.</p>
+
+        <p class="subtitle">Cowrie's retired now. That same Oracle box runs this site instead.</p>
+      </article>
+
+      <a class="back" href="index.html">&larr; back to ~/</a>
+    </div>
+  </div>
+</div>
+
+<script src="rain.js"></script>
+</body>
+</html>

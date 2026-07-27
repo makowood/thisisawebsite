@@ -1,0 +1,13 @@
+{
+  "name": "sentinel-guestbook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tiny guestbook API backend for thisisawebsite.fyi",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "optionalDependencies": {
+    "bad-words": "^3.0.4"
+  }
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>what's actually running — thisisawebsite.fyi</title>
+<meta name="description" content="Michael's actual stack — OS, phone, homelab fleet, networking, and daily-use apps. No affiliate links, just what's running.">
+<meta property="og:title" content="what's actually running">
+<meta property="og:description" content="Michael's actual stack — OS, phone, homelab fleet, networking, and daily-use apps. No affiliate links, just what's running.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://thisisawebsite.fyi/uses.html">
+<meta property="og:image" content="https://thisisawebsite.fyi/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div class="crt">
+  <div class="screen">
+    <div class="titlebar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="path">root@sentinel : ~/uses</span>
+    </div>
+    <nav class="tabnav">
+      <a href="index.html">~/</a>
+      <a href="resume.html">resume</a>
+      <a href="projects.html">projects</a>
+      <a href="uses.html" class="active">uses</a>
+      <a href="guestbook.html">guestbook</a>
+    </nav>
+    <div class="page">
+      <article>
+        <h1>what's actually running</h1>
+        <p class="subtitle">no affiliate links. just what's on the machines.</p>
+
+        <h2>OS &amp; Desktop</h2>
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>OS</td><td>CachyOS + Hyprland (uwsm-managed, tuigreet login)</td></tr>
+            <tr><td>Shell</td><td>Fish</td></tr>
+            <tr><td>Terminal</td><td>Kitty</td></tr>
+            <tr><td>Editor</td><td>VSCodium + Claude Code</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Phone</h2>
+        <table>
+          <thead>
+            <tr><th>Component</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Device</td><td>Pixel 9, GrapheneOS — sandboxed Google Play</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Homelab Fleet</h2>
+        <table>
+          <thead>
+            <tr><th>Host</th><th>Role</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>terminus</td><td>exit node, Minecraft server, backup cron</td></tr>
+            <tr><td>lacuna</td><td>Pi-hole, DNS</td></tr>
+            <tr><td>sentinel</td><td>this site, Oracle Cloud ARM, formerly a Cowrie honeypot</td></tr>
+            <tr><td>redoubt</td><td>the phone, above</td></tr>
+            <tr><td>knulli</td><td>Anbernic RG35XX-H handheld</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Networking &amp; Infra</h2>
+        <p class="taglist">
+          <span class="tag">Tailscale</span><span class="tag">Caddy</span>
+          <span class="tag">rclone + Backblaze B2</span><span class="tag">Pi-hole</span>
+          <span class="tag">iptables</span>
+        </p>
+
+        <h2>Daily Apps</h2>
+        <p class="taglist">
+          <span class="tag">Molly-FOSS</span><span class="tag">Bitwarden</span>
+          <span class="tag">Aegis</span><span class="tag">Ente Photos</span>
+          <span class="tag">Organic Maps</span>
+        </p>
+      </article>
+
+      <a class="back" href="index.html">&larr; back to ~/</a>
+    </div>
+  </div>
+</div>
+
+<script src="rain.js"></script>
+</body>
+</html>

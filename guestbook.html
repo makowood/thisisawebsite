@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>guestbook — thisisawebsite.fyi</title>
+<meta name="description" content="Sign the guestbook. Leave a note for whoever's reading this next.">
+<meta property="og:title" content="guestbook">
+<meta property="og:description" content="Sign the guestbook. Leave a note for whoever's reading this next.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://thisisawebsite.fyi/guestbook.html">
+<meta property="og:image" content="https://thisisawebsite.fyi/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div class="crt">
+  <div class="screen">
+    <div class="titlebar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="path">root@sentinel : ~/guestbook</span>
+    </div>
+    <nav class="tabnav">
+      <a href="index.html">~/</a>
+      <a href="resume.html">resume</a>
+      <a href="projects.html">projects</a>
+      <a href="uses.html">uses</a>
+      <a href="guestbook.html" class="active">guestbook</a>
+    </nav>
+    <div class="page">
+      <article>
+        <h1>guestbook</h1>
+        <p class="subtitle">leave a note. keep it clean, i mean it.</p>
+
+        <h2>sign it</h2>
+        <div class="gb-form" aria-label="guestbook entry form">
+          <div class="gb-field">
+            <label for="gbName">name</label>
+            <input type="text" id="gbName" maxlength="40" autocomplete="off" spellcheck="false" placeholder="whoever you are">
+            <span class="gb-counter" id="gbNameCount">0/40</span>
+          </div>
+          <div class="gb-field">
+            <label for="gbMessage">message</label>
+            <textarea id="gbMessage" maxlength="200" rows="3" spellcheck="false" placeholder="say something"></textarea>
+            <span class="gb-counter" id="gbMessageCount">0/200</span>
+          </div>
+          <button type="button" id="gbSubmit" class="gb-btn">sign guestbook</button>
+          <p class="gb-status" id="gbStatus" role="status" aria-live="polite"></p>
+        </div>
+
+        <h2>entries</h2>
+        <div id="gbEntries" class="gb-entries" aria-live="polite">
+          <p class="dim">loading guestbook...</p>
+        </div>
+      </article>
+
+      <a class="back" href="index.html">&larr; back to ~/</a>
+    </div>
+  </div>
+</div>
+
+<script src="rain.js"></script>
+<script src="guestbook.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — thisisawebsite.fyi</title>
+<meta name="description" content="Page not found — kernel panic on sentinel.local.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div class="crt">
+  <div class="screen">
+    <div class="titlebar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="path">root@sentinel : ~/404</span>
+    </div>
+    <nav class="tabnav">
+      <a href="index.html">~/</a>
+      <a href="resume.html">resume</a>
+      <a href="projects.html">projects</a>
+    </nav>
+    <div class="page panic">
+      <h1>segmentation fault <span class="dim">(core dumped)</span></h1>
+      <p class="subtitle">404 — that page isn't mapped into this address space</p>
+
+      <pre class="panic-dump">Kernel panic - not syncing: Attempted to access nonexistent page
+CPU: 0 PID: 404 Comm: sentinel-httpd  Not tainted 6.1.0-sentinel #1
+Call Trace:
+ &lt;TASK&gt;
+ ? page_fault+0x1a/0x40
+ ? route_lookup+0x0/0x1
+ ? handle_request+0x2a4/0x2a4
+ &lt;/TASK&gt;
+---[ end Kernel panic - not syncing: 404 NOT FOUND ]---</pre>
+
+      <p>whatever you were looking for either moved, never existed, or got caught by the honeypot
+      before it could load.</p>
+
+      <a class="back" href="index.html">&larr; reboot to ~/</a>
+    </div>
+  </div>
+</div>
+
+<script src="rain.js"></script>
+</body>
+</html>

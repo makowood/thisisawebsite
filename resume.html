@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>resume — thisisawebsite.fyi</title>
+<meta name="description" content="Michael's resume — information systems, ai business minor, homelab work.">
+<meta property="og:title" content="resume">
+<meta property="og:description" content="Michael's resume — information systems, ai business minor, homelab work.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://thisisawebsite.fyi/resume.html">
+<meta property="og:image" content="https://thisisawebsite.fyi/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div class="crt">
+  <div class="screen">
+    <div class="titlebar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="path">root@sentinel : ~/resume</span>
+    </div>
+    <nav class="tabnav">
+      <a href="index.html">~/</a>
+      <a href="resume.html" class="active">resume</a>
+      <a href="projects.html">projects</a>
+      <a href="uses.html">uses</a>
+      <a href="guestbook.html">guestbook</a>
+    </nav>
+    <div class="page">
+      <h1>michael</h1>
+      <p class="subtitle">information systems &middot; ai business minor</p>
+
+      <h2>education</h2>
+      <p>BYU-Idaho &middot; expected grad spring 2028 &middot; 4.0 gpa</p>
+
+      <h2>interests</h2>
+      <p>sysadmin work, self-hosted infra, privacy-first tooling.</p>
+
+      <h2>recent work</h2>
+      <p>Deployed a full Wazuh 4.14 SIEM alongside a Cowrie honeypot on Oracle Cloud. Caught real
+      external scanning/attack activity during a campus security showcase — logs, alerts, the works.</p>
+
+      <h2>also runs</h2>
+      <p>LINE UPON LINE — an Etsy shop pairing scripture with code concepts, sold as apparel.</p>
+
+      <h2>stack</h2>
+      <p>
+        <span class="tag">caddy</span><span class="tag">tailscale</span><span class="tag">wazuh</span>
+        <span class="tag">grapheneos</span><span class="tag">cachyos + hyprland</span>
+        <span class="tag">pi-hole</span><span class="tag">rclone + backblaze</span>
+        <span class="tag">bitwarden</span><span class="tag">fish shell</span>
+      </p>
+
+      <p class="subtitle">(full resume / downloadable version coming soon)</p>
+
+      <a class="back" href="index.html">&larr; back to ~/</a>
+    </div>
+  </div>
+</div>
+
+<script src="rain.js"></script>
+</body>
+</html>

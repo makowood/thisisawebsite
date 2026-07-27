@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sentinel — thisisawebsite.fyi</title>
+<meta name="description" content="Michael's homelab terminal. Poke around.">
+<meta property="og:title" content="sentinel">
+<meta property="og:description" content="Michael's homelab terminal. Poke around.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://thisisawebsite.fyi/">
+<meta property="og:image" content="https://thisisawebsite.fyi/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div class="crt">
+  <div class="screen">
+    <div class="titlebar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="path">root@sentinel : ~</span>
+    </div>
+    <nav class="tabnav">
+      <a href="index.html" class="active">~/</a>
+      <a href="resume.html">resume</a>
+      <a href="projects.html">projects</a>
+      <a href="uses.html">uses</a>
+      <a href="guestbook.html">guestbook</a>
+    </nav>
+    <div class="term" id="term">
+      <h1 class="logo" id="logo"></h1>
+      <div class="splash dim" id="splash"></div>
+      <div id="output"></div>
+      <div class="promptline" id="promptline" style="display:none;">
+        <span class="p" id="promptLabel">guest@sentinel:~$</span>
+        <input id="cmdInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="terminal input" />
+      </div>
+      <div class="footer">type <span class="white">help</span> to see what this thing does.</div>
+    </div>
+  </div>
+</div>
+
+<script src="rain.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

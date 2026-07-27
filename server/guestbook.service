@@ -1,0 +1,16 @@
+[Unit]
+Description=guestbook API for thisisawebsite.fyi
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/thisisawebsite/server
+ExecStart=/usr/bin/node server.js
+Environment=PORT=8787
+Environment=GUESTBOOK_ADMIN_TOKEN=changeme
+Restart=on-failure
+RestartSec=5
+User=www-data
+
+[Install]
+WantedBy=multi-user.target

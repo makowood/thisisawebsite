@@ -1,0 +1,20 @@
+# Local tooling
+.claude/
+
+# Environment & secrets
+.env
+.env.*
+*.pem
+*.key
+
+# Node
+node_modules/
+npm-debug.log
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# OS junk
+.DS_Store
