@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>resume — thisisawebsite.fyi</title>
-<meta name="description" content="Michael's resume — information systems, ai business minor, homelab work.">
+<meta name="description" content="Michael's resume — cybersecurity student at BYU-Idaho, homelab and cloud infra work.">
 <meta property="og:title" content="resume">
-<meta property="og:description" content="Michael's resume — information systems, ai business minor, homelab work.">
+<meta property="og:description" content="Michael's resume — cybersecurity student at BYU-Idaho, homelab and cloud infra work.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://thisisawebsite.fyi/resume.html">
 <meta property="og:image" content="https://thisisawebsite.fyi/og-image.png">
@@ -36,26 +36,58 @@
     </nav>
     <div class="page">
       <h1>michael</h1>
-      <p class="subtitle">information systems &middot; ai business minor</p>
+      <p class="subtitle">cybersecurity &middot; byu-idaho</p>
 
       <h2>education</h2>
-      <p>BYU-Idaho &middot; expected grad spring 2028 &middot; 4.0 gpa</p>
+      <p>BYU-Idaho &middot; cybersecurity major &middot; expected grad spring 2028 &middot; 4.0 gpa</p>
+      <p>Working toward CompTIA Security+ before graduation.</p>
 
       <h2>interests</h2>
       <p>sysadmin work, self-hosted infra, privacy-first tooling.</p>
 
       <h2>recent work</h2>
-      <p>Deployed a full Wazuh 4.14 SIEM alongside a Cowrie honeypot on Oracle Cloud. Caught real
-      external scanning/attack activity during a campus security showcase — logs, alerts, the works.</p>
+      <p>Built a Wazuh 4.14 SIEM (manager, indexer, dashboard) on terminus, paired with an isolated Cowrie
+      SSH honeypot on Oracle Cloud. Logged ~3,000 automated attempts in about a week, wrote suppression
+      rules to cut the noise, and presented it at the department's cybersecurity showcase.
+      <a href="projects.html">full writeup</a>.</p>
+
+      <h2>homelab &amp; cloud</h2>
+      <ul>
+        <li>Multi-node homelab: Proxmox VE across several mini-PCs, LXC containers, Docker.</li>
+        <li>Runs Immich (~167GB migrated off Google Photos), Jellyfin, Actual Budget, Uptime Kuma, and a
+        Minecraft server under systemd + tmux. Evaluated Nextcloud, then decommissioned it.</li>
+        <li>Networking: Tailscale subnet routing, NFS shares, Caddy reverse proxy.</li>
+        <li>This site: Oracle Cloud ARM instance behind Cloudflare (WAF, DNSSEC, full-strict SSL).</li>
+        <li>Backups: rclone to Backblaze B2 with client-side encryption.</li>
+        <li>Coursework: provisioned and administered an AWS EC2 Ubuntu instance.</li>
+      </ul>
+
+      <h2>experience</h2>
+      <table>
+        <thead>
+          <tr><th>Role</th><th>Where / When</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>IT support (informal)</td><td>independent, word of mouth &middot; 2023&ndash;present</td></tr>
+          <tr><td>Irrigation technician</td><td>AgReserves, Inc. &middot; aug&ndash;dec 2025</td></tr>
+          <tr><td>FSY counselor</td><td>For the Strength of Youth &middot; summer 2025</td></tr>
+          <tr><td>UA technician</td><td>Legacy Family Services &middot; 2024&ndash;2025</td></tr>
+          <tr><td>Full-time missionary</td><td>Utah Salt Lake City South Mission &middot; 2021&ndash;2023</td></tr>
+          <tr><td>Piano instructor</td><td>self-employed &middot; 2019&ndash;2026</td></tr>
+          <tr><td>Photo lab assistant</td><td>Henley's Photo &middot; 2019&ndash;2020</td></tr>
+        </tbody>
+      </table>
 
       <h2>also runs</h2>
-      <p>LINE UPON LINE — an Etsy shop pairing scripture with code concepts, sold as apparel.</p>
+      <p>LINE UPON LINE — an Etsy shop pairing scripture with code concepts, sold as apparel. Quiet these days.</p>
 
       <h2>stack</h2>
-      <p>
-        <span class="tag">caddy</span><span class="tag">tailscale</span><span class="tag">wazuh</span>
+      <p class="taglist">
+        <span class="tag">proxmox ve</span><span class="tag">docker</span><span class="tag">lxc</span>
+        <span class="tag">caddy</span><span class="tag">tailscale</span><span class="tag">cloudflare</span>
+        <span class="tag">wazuh</span><span class="tag">oracle cloud</span><span class="tag">aws ec2</span>
+        <span class="tag">bash</span><span class="tag">pi-hole</span><span class="tag">rclone + backblaze</span>
         <span class="tag">grapheneos</span><span class="tag">cachyos + hyprland</span>
-        <span class="tag">pi-hole</span><span class="tag">rclone + backblaze</span>
         <span class="tag">bitwarden</span><span class="tag">fish shell</span>
       </p>
 

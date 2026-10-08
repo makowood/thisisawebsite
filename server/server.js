@@ -6,6 +6,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const PORT = process.env.PORT || 8787;
+const HOST = process.env.HOST || "127.0.0.1";
 const ADMIN_TOKEN = process.env.GUESTBOOK_ADMIN_TOKEN || "";
 const DATA_FILE = path.join(__dirname, "data", "guestbook.json");
 const WORDLIST_FILE = path.join(__dirname, "wordlist.json");
@@ -220,8 +221,8 @@ const server = http.createServer(function (req, res) {
   }
 });
 
-server.listen(PORT, function () {
-  console.log("guestbook api listening on :" + PORT + (filter ? " (bad-words engine)" : " (bundled wordlist)"));
+server.listen(PORT, HOST, function () {
+  console.log("guestbook api listening on " + HOST + ":" + PORT + (filter ? " (bad-words engine)" : " (bundled wordlist)"));
   if (!ADMIN_TOKEN) {
     console.warn("warning: GUESTBOOK_ADMIN_TOKEN is not set — admin delete will always return 401.");
   }

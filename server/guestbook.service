@@ -4,13 +4,50 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/path/to/thisisawebsite/server
+WorkingDirectory=/opt/guestbook
 ExecStart=/usr/bin/node server.js
 Environment=PORT=8787
-Environment=GUESTBOOK_ADMIN_TOKEN=changeme
+Environment=HOST=127.0.0.1
+# Token lives outside the unit file (unit files are world-readable).
+# Create with: sudo install -m 600 -o root -g root /dev/null /etc/guestbook.env
+# then add:    GUESTBOOK_ADMIN_TOKEN=<openssl rand -hex 24>
+EnvironmentFile=/etc/guestbook.env
 Restart=on-failure
 RestartSec=5
 User=www-data
+Group=www-data
+UMask=0077
+
+# --- sandboxing ---
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+ProtectSystem=strict
+# Only the data dir is writable. Lives in /opt so ProtectHome can stay on.
+ReadWritePaths=/opt/guestbook/data
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectProc=invisible
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+SystemCallErrorNumber=EPERM
+# Only Caddy on localhost should ever talk to this.
+IPAddressAllow=localhost
+IPAddressDeny=any
+# MemoryDenyWriteExecute is deliberately omitted — it breaks V8's JIT.
 
 [Install]
 WantedBy=multi-user.target

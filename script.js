@@ -299,7 +299,6 @@
       print("  whoami          who runs this thing");
       print("  neofetch        specs, but for a person");
       print("  fleet           status of the homelab devices");
-      print("  contact         where to find me");
       print("  theme           swap green / amber phosphor");
       print("  games           list playable games");
       print("  clear           clear the screen");
@@ -312,7 +311,6 @@
       print("  pong            you vs. a cpu paddle");
       print("  breakout        break some bricks");
       print("  guess           tiny number-guessing game");
-      print("  zork            text adventure (work in progress)");
       print("");
       print("type any of these to play.", "dim");
     },
@@ -324,7 +322,7 @@
         '    | |__     <span class="dim">OS</span>: human, patched irregularly\n' +
         '   _| |__|    <span class="dim">Shell</span>: fish\n' +
         '  |___|       <span class="dim">Editor</span>: vscodium + claude code\n' +
-        '              <span class="dim">Focus</span>: information systems, ai minor\n' +
+        '              <span class="dim">Focus</span>: cybersecurity, byu-idaho\n' +
         '              <span class="dim">Uptime</span>: 4.0 gpa, several semesters running\n' +
         '              <span class="dim">DE</span>: hyprland (cachyos)\n' +
         '              <span class="dim">Packages</span>: piano, guitar, bass, drums, cardistry\n' +
@@ -342,8 +340,8 @@
     now: function(){
       print("currently:");
       print("  - building this site out, command by command");
-      print("  - deciding between FTC employment and SOC volunteering next semester");
-      print("  - writing up the wazuh/cowrie showcase project");
+      print("  - studying for security+");
+      print("  - picking the next homelab project worth writing up");
       print("  - slowly turning a fibonacci sequence into a scripture-encoding easter egg");
     },
     theme: function(){
@@ -379,7 +377,7 @@
     },
     whoami: function(){
       print("michael");
-      print("information systems student, ai business minor. byu-idaho.");
+      print("cybersecurity student. byu-idaho.");
       print("builds and breaks his own infrastructure for fun, mostly on purpose.");
     },
     fleet: function(){
@@ -397,10 +395,6 @@
     stack: function(){
       print("caddy, tailscale, wazuh (formerly), grapheneos, cachyos + hyprland,");
       print("pi-hole, rclone + backblaze, bitwarden, fish shell. mostly self-hosted, on purpose.");
-    },
-    contact: function(){
-      print("shop: line upon line — search it on etsy.");
-      print("(add your links here once you've got a github/socials you want public.)");
     },
     clear: function(){
       output.innerHTML = "";
@@ -433,13 +427,6 @@
     },
     breakout: function(){
       startBreakout();
-    },
-    zork: function(){
-      print("west of house", "white");
-      print("you are standing in an open field west of a white house, with a boarded front door.", "dim");
-      print("there is a small mailbox here.");
-      print("");
-      print("(this game is a work in progress. more soon.)", "dim");
     },
     rm: function(args){
       var normalized = (args || '').trim().replace(/\s+/g, ' ');
@@ -630,7 +617,6 @@
         neofetch: { name: "display system information for a human", synopsis: "neofetch", desc: "Prints specs for a biological host instead of a machine. Uptime is measured in gpa." },
         fleet:    { name: "report homelab device status", synopsis: "fleet", desc: "Lists every device in the homelab and its status. All statuses are self-reported." },
         stack:    { name: "list the software stack", synopsis: "stack", desc: "Lists the tools this site and its infrastructure depend on. Self-hosted, on purpose." },
-        contact:  { name: "print contact information", synopsis: "contact", desc: "Returns the one confirmed way to reach the operator." },
         now:      { name: "print current focus", synopsis: "now", desc: "Prints whatever the operator is presently supposed to be working on." },
         theme:    { name: "toggle terminal phosphor color", synopsis: "theme", desc: "Swaps the display between green and amber phosphor. Has no effect on mood." },
         games:    { name: "list playable games", synopsis: "games", desc: "Lists the games this shell supports. Playing them is optional, but encouraged." },
@@ -640,7 +626,6 @@
         snake:    { name: "play snake", synopsis: "snake", desc: "Launches a canvas-based game of snake. Controlled with arrow keys." },
         pong:     { name: "play pong against the house", synopsis: "pong", desc: "Launches pong. Up/down or w/s move your paddle. The cpu paddle is beatable, statistically." },
         breakout: { name: "break some bricks", synopsis: "breakout", desc: "Launches breakout. Left/right or a/d move the paddle. Bricks do not respawn, mercifully." },
-        zork:     { name: "begin a text adventure", synopsis: "zork", desc: "Begins a text adventure that does not, in any meaningful sense, continue." },
         hack:     { name: "simulate an unauthorized breach", synopsis: "hack", desc: "Simulates a break-in for entertainment. No system was harmed, entered, or impressed." },
         fortune:  { name: "print sysadmin wisdom", synopsis: "fortune", desc: "Prints one line of unsolicited sysadmin wisdom, chosen at random." },
         ping:     { name: "send a fake echo request", synopsis: "ping <host>", desc: "Sends a fake icmp echo request to HOST. Response time and honesty are both editorialized." },

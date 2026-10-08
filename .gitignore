@@ -1,5 +1,5 @@
-# Local tooling
-.claude/
+# Local tooling (agents/skills are shared and versioned; only local settings are ignored)
+.claude/settings.local.json
 
 # Environment & secrets
 .env
@@ -18,3 +18,6 @@ npm-debug.log
 
 # OS junk
 .DS_Store
+
+# Private job-application material (contact info, resumes) — never commit
+docs/
