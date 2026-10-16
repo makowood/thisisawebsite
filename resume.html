@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
 </head>
 <body>
 
@@ -24,7 +25,8 @@
 <div class="crt">
   <div class="screen">
     <div class="titlebar">
-      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span>
+      <button type="button" class="theme-toggle" aria-pressed="false" title="swap phosphor colour">phosphor: green</button>
       <span class="path">root@sentinel : ~/resume</span>
     </div>
     <nav class="tabnav">
@@ -35,7 +37,7 @@
       <a href="guestbook.html">guestbook</a>
     </nav>
     <div class="page">
-      <h1>michael</h1>
+      <h1>michael gabbitas</h1>
       <p class="subtitle">cybersecurity &middot; byu-idaho</p>
 
       <h2>education</h2>
@@ -91,7 +93,11 @@
         <span class="tag">bitwarden</span><span class="tag">fish shell</span>
       </p>
 
-      <p class="subtitle">(full resume / downloadable version coming soon)</p>
+      <h2>contact</h2>
+      <p><a href="mailto:michaelgabbitas@outlook.com">michaelgabbitas@outlook.com</a>. A real inbox,
+      read by the same person who runs the servers. The <a href="guestbook.html">guestbook</a> works too,
+      but everyone can read that one.</p>
+      <p class="subtitle">full resume on request. it has a phone number on it, so it doesn't live on a public server.</p>
 
       <a class="back" href="index.html">&larr; back to ~/</a>
     </div>

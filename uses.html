@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="theme.js"></script>
 </head>
 <body>
 
@@ -24,7 +25,8 @@
 <div class="crt">
   <div class="screen">
     <div class="titlebar">
-      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span>
+      <button type="button" class="theme-toggle" aria-pressed="false" title="swap phosphor colour">phosphor: green</button>
       <span class="path">root@sentinel : ~/uses</span>
     </div>
     <nav class="tabnav">

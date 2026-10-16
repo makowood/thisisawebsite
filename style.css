@@ -2,8 +2,8 @@
   --bg: #060a07;
   --bg-crt: #050805;
   --green: #39ff6a;
-  --green-dim: #1f7a3d;
-  --green-faint: #0f3d1f;
+  --green-dim: #2a9a4d;   /* text: ~5.2:1 on the panel. */
+  --green-faint: #0f3d1f; /* borders/rules only. never text (~1.5:1). */
   --amber: #ffb300;
   --red: #ff4d4d;
   --white: #d9ffe4;
@@ -17,11 +17,12 @@
   --logo-glow: rgba(57,255,106,0.45);
 }
 
-body.theme-amber{
+/* theme class lives on <html> so theme.js can apply it in <head>, before paint */
+html.theme-amber{
   --green: #ffb300;
-  --green-dim: #8a5c00;
-  --green-faint: #3d2a00;
-  --amber: #39ff6a;
+  --green-dim: #b47b00;   /* text: ~5.2:1 on the amber panel. */
+  --green-faint: #3d2a00; /* borders/rules only. */
+  --amber: #ffd98a;       /* accents stay amber family (pale) instead of flipping to green */
   --white: #fff3d9;
   --bg: #0a0805;
 
@@ -110,7 +111,25 @@ html,body{
   letter-spacing: 0.06em;
 }
 .dot{ width:9px; height:9px; border-radius:50%; background: var(--green-dim); opacity:0.6; }
-.titlebar .path{ margin-left:auto; opacity:0.8; }
+.titlebar .path{
+  margin-left:auto; opacity:0.8;
+  min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+/* phosphor toggle: in-conceit chrome, styled like the path text */
+.theme-toggle{
+  margin-left: 6px;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--green-dim);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 1px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.theme-toggle:hover{ color: var(--green); border-color: var(--green-faint); }
 
 .tabnav{
   display:flex; gap:4px;
@@ -162,6 +181,8 @@ h1.logo{
 }
 
 .line{ margin: 0 0 2px; white-space: pre-wrap; word-break: break-word; }
+.line.hint{ padding-left: 6ch; } /* secrets hints on narrow screens: hanging indent under "  [ ] " */
+.line.hint-row{ padding-left: 25ch; text-indent: -25ch; } /* wide: a wrapped hint stays in its column */
 .dim{ color: var(--green-dim); }
 .amber{ color: var(--amber); }
 .red{ color: var(--red); }
@@ -201,7 +222,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, canvas:focus-visible
 @keyframes blink{ 50%{ opacity:0; } }
 
 .footer{
-  margin-top: 26px; font-size: 12px; color: var(--green-faint);
+  margin-top: 26px; font-size: 12px; color: var(--green-dim);
 }
 
 /* static content pages (resume, projects) */
@@ -282,8 +303,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, canvas:focus-visible
   display:inline-block;
   margin-top: 20px;
   font-size: 12px;
-  color: var(--green-faint);
+  color: var(--green-dim);
+  text-decoration: underline dotted var(--green-dim);
 }
+.page .back:hover{ color: var(--green); }
 
 /* guestbook */
 .gb-form{
@@ -323,7 +346,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, canvas:focus-visible
   display:block;
   text-align:right;
   font-size: 11px;
-  color: var(--green-faint);
+  color: var(--green-dim);
   margin-top: 3px;
 }
 .gb-counter.gb-counter-warn{ color: var(--amber); }
@@ -353,9 +376,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, canvas:focus-visible
   font-size: 13px;
 }
 .gb-entry-name{ color: var(--white); font-weight:600; }
-.gb-entry-time{ color: var(--green-faint); font-size: 11px; }
+.gb-entry-time{ color: var(--green-dim); font-size: 11px; }
 .gb-entry-msg{ margin: 3px 0 0; font-size: 14px; line-height:1.5; color: var(--green); }
-.gb-entry-key{ display:block; margin-top:4px; font-size: 10px; color: var(--green-faint); user-select: all; }
+.gb-entry-key{ display:block; margin-top:4px; font-size: 10px; color: var(--green-dim); user-select: all; }
 
 /* 404 / kernel panic page */
 .page.panic h1{
@@ -378,6 +401,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, canvas:focus-visible
 
 /* arcade: snake / pong / breakout share this canvas */
 #arcadeWrap{ margin: 14px 0; display:none; flex-direction:column; align-items:flex-start; gap:6px; }
+#arcadeQuit{
+  font: inherit; font-size: 13px;
+  color: var(--green-dim);
+  background: transparent;
+  border: 1px solid var(--green-faint);
+  border-radius: 3px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+#arcadeQuit:hover{ color: var(--green); border-color: var(--green-dim); }
 #arcadeCanvas{
   background: #030503; border: 1px solid var(--green-dim);
   image-rendering: pixelated;
@@ -386,6 +419,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, canvas:focus-visible
 @media (max-width: 560px){
   .term{ font-size: 13.5px; padding: 16px 12px; }
   .screen{ max-width: 100%; }
+  .titlebar{ padding: 10px 10px; gap: 6px; }
+  .theme-toggle{ margin-left: 2px; padding: 1px 4px; }
 }
 
 @media (prefers-reduced-motion: reduce){

@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /.secrets
+# good recon. wrong layer. it's a file in the shell, not a path: ls -a

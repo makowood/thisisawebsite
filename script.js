@@ -5,6 +5,9 @@
 
   /* ---------------- boot sequence ---------------- */
   var logo = document.getElementById('logo');
+  // the h1 carries aria-label="thisisawebsite.fyi"; the art goes in an aria-hidden
+  // span so screen readers don't read out a wall of punctuation.
+  var logoArt = document.getElementById('logoArt') || logo;
   var mainLogoArt =
 ".-----..-..-..-. .--.   .-. .--.    .--.                       \n" +
 "`-. .-': :; :: :: .--'  : :: .--'  : .; :                      \n" +
@@ -25,19 +28,20 @@
 "\\___ \\|  _| |  \\| | | |  | ||  \\| |  _| | |\n" +
 " ___) | |___| |\\  | | |  | || |\\  | |___| |___\n" +
 "|____/|_____|_| \\_| |_| |___|_| \\_|_____|_____|";
-  logo.textContent = mainLogoArt;
+  logoArt.textContent = mainLogoArt;
 
   logo.addEventListener('click', function(e){
     if(e.detail === 3){
-      logo.textContent = altLogoArt;
-      setTimeout(function(){ logo.textContent = mainLogoArt; }, 1000);
+      logoArt.textContent = altLogoArt;
+      markFound('logo');
+      setTimeout(function(){ logoArt.textContent = mainLogoArt; }, 1000);
     }
   });
 
   /* ---------------- splash text ---------------- */
   var splashText = [
     "psst. try sl.",
-    "formerly a honeypot. ask me how.",
+    "formerly a honeypot. cat honeypot.log.",
     "4 OCPUs became 2 and nobody told me.",
     "SSH is tailnet-only now. nice try.",
     "type help. or don't. i'm not your boss.",
@@ -65,12 +69,11 @@
     "no capes. no exceptions.",
     "may contain traces of iptables.",
     "hand-typed, badly, at 1am.",
-    "ask about the honeypot. seriously, ask.",
     "best viewed in a terminal font and low expectations.",
     "the cake was never here. this is a website.",
     "certified 100% artisanal, handcrafted spaghetti code.",
     "now with fewer honeypots than before!",
-    "you are not stuck. you just haven't found /explore yet.",
+    "help is the public list. ls -a is the other one.",
     "sudo won't save you here.",
     "this message will not self-destruct. budget cuts."
   ];
@@ -83,6 +86,7 @@
     var div = document.createElement('div');
     div.className = 'line' + (cls ? ' ' + cls : '');
     container.appendChild(div);
+    if(container === output) scrollToBottom();
     if(reduceMotion){ div.textContent = text; cb(); return; }
     var i = 0;
     (function tick(){
@@ -107,18 +111,29 @@
 
   function shellPromptText(){ return dosMode ? 'A:\\>' : 'guest@sentinel:~$'; }
 
+  // html,body{overflow-x:hidden} makes <body> the scroll container, so
+  // window.scrollTo() is a no-op. scrollIntoView works whichever element scrolls.
+  function scrollToBottom(){
+    var target = (promptline && promptline.style.display !== 'none') ? promptline : output.lastElementChild;
+    if(target && target.scrollIntoView) target.scrollIntoView({ block: 'end' });
+  }
+
   function print(text, cls){
     var div = document.createElement('div');
     div.className = 'line' + (cls ? ' ' + cls : '');
     div.textContent = text;
     output.appendChild(div);
-    window.scrollTo(0, document.body.scrollHeight);
+    scrollToBottom();
   }
+  // fixed strings only. anything containing user input or guestbook data goes
+  // through print() (textContent). escapeHTML() doesn't escape quotes, so it is
+  // never safe inside an attribute.
   function printHTML(html, cls){
     var div = document.createElement('div');
     div.className = 'line' + (cls ? ' ' + cls : '');
     div.innerHTML = html;
     output.appendChild(div);
+    scrollToBottom();
   }
 
   function startShell(){
@@ -134,6 +149,7 @@
   /* ---------------- idle ghost demo ---------------- */
   var idleTimer = null;
   var ghostTyping = false;
+  var ghostRunning = false;
   var IDLE_MS = 45000;
   var ghostDemoCount = 0;
   var MAX_GHOST_DEMOS = 3; // after this many unanswered demos, go dormant and stop spamming
@@ -157,6 +173,7 @@
       dormant = true; // nobody's watching; stop polling and typing at an empty room
       return;
     }
+    if(ghostDemoCount === MAX_GHOST_DEMOS){ ghostType('ls -a'); return; } // last one leaves a breadcrumb
     var demoCmds = ['fortune', 'fleet'];
     ghostType(demoCmds[Math.floor(Math.random() * demoCmds.length)]);
   }
@@ -170,7 +187,8 @@
       if(i > cmd.length){
         ghostTyping = false;
         printHTML('<span class="dim">guest@sentinel:~$</span> ' + escapeHTML(cmd));
-        handleShell(cmd);
+        ghostRunning = true; // the ghost doesn't get credit for finding secrets
+        try { handleShell(cmd); } finally { ghostRunning = false; }
         input.value = '';
         resetIdleTimer();
         return;
@@ -181,8 +199,15 @@
     })();
   }
 
-  document.addEventListener('click', function(){
-    if(mode !== 'snake' && mode !== 'pong' && mode !== 'breakout') input.focus();
+  document.addEventListener('click', function(e){
+    if(mode === 'snake' || mode === 'pong' || mode === 'breakout') return;
+    // don't steal focus from links/buttons, and don't kill a text selection
+    // someone is trying to copy out of the scrollback.
+    var t = e.target;
+    if(t && t.closest && t.closest('a, button, input, textarea, select, label')) return;
+    var sel = window.getSelection ? window.getSelection() : null;
+    if(sel && !sel.isCollapsed && String(sel).length) return;
+    input.focus();
   });
 
   /* ---------------- fake breach sequence ---------------- */
@@ -293,17 +318,275 @@
     })();
   }
 
+  /* ---------------- hidden files: history, secrets, ls -a ----------------
+     public commands are in help. everything else is a secret, discoverable via
+     ls -a -> .bash_history -> .secrets. none of this is sensitive: it's all
+     readable in this file. guestbook-admin is admin tooling, not a secret, and
+     is never tracked, listed, completed or hinted at. */
+
+  function hasOwn(obj, key){ return Object.prototype.hasOwnProperty.call(obj, key); }
+  function padRight(s, n){ return s.length >= n ? s + ' ' : s + ' '.repeat(n - s.length); }
+
+  // the operator's shell history. doubles as the secrets list.
+  var OP_HISTORY = [
+    "ssh terminus",
+    "free -h",
+    "sudo systemctl stop wazuh-manager",
+    "sl",
+    "ls",
+    "vim resume.txt",
+    ":q",
+    ":q!",
+    "how do i exit vim",
+    ":wq",
+    "ping lacuna",
+    "sudo rm honeypot",
+    "cat honeypot.log",
+    "games",
+    "cowsay ship it",
+    "format c:",
+    "a:",
+    "fortune",
+    "hack",
+    "rm -rf /",
+    "coffee",
+    "history -c"
+  ];
+
+  function printOperatorHistory(){
+    OP_HISTORY.forEach(function(line, i){
+      var n = String(i + 1);
+      print(' '.repeat(5 - n.length) + n + '  ' + line);
+    });
+  }
+
+  var LS_DOTFILES = [
+    ["./", ""],
+    ["../", ""],
+    [".bash_history", ""],
+    [".secrets", "(yours, once you find some)"]
+  ];
+  var LS_FILES = [
+    ["regrets/", ""],
+    ["side_projects/", "(mostly abandoned)"],
+    ["todo.txt", "(never opened)"],
+    ["hopes.sh", "(not actually executable)"],
+    ["honeypot.log", "(read-only. finally.)"]
+  ];
+  function printListing(rows){
+    rows.forEach(function(r){ print(r[1] ? padRight(r[0], 25) + r[1] : r[0], "dim"); });
+  }
+  function isAllFlag(a){ return /^-[a-z]*a[a-z]*$/i.test(a); }
+  function normPath(a){ return a.trim().toLowerCase().replace(/^(~\/|\.\/|\/home\/guest\/)/, ''); }
+
+  var HONEYPOT_LOG = [
+    "2025-03-11T03:12:40Z [SSHTransport,4211,203.0.113.77] login attempt [root/123456] failed",
+    "2025-03-11T03:12:41Z [SSHTransport,4211,203.0.113.77] login attempt [root/root] succeeded",
+    "2025-03-11T03:12:43Z [SSHTransport,4211,203.0.113.77] CMD: uname -a",
+    "2025-03-11T03:12:44Z [SSHTransport,4211,203.0.113.77] CMD: cat /proc/cpuinfo | grep name",
+    "2025-03-11T03:12:47Z [SSHTransport,4211,203.0.113.77] CMD: echo \"all your base are belong to us\"",
+    "2025-03-11T03:12:47Z [SSHTransport,4211,203.0.113.77] Connection lost after 7 seconds"
+  ];
+  function printHoneypotLog(){
+    print("cowrie.log (excerpt, dramatized)", "white");
+    HONEYPOT_LOG.forEach(function(l){ print(l); });
+    print("log truncated. the base is fine.", "dim");
+  }
+
+  // secrets tracker. client-only: localStorage in this browser, never sent anywhere.
+  var SECRETS_KEY = 'sentinel.secrets';
+  // [id, hint]. hints are oblique on purpose: they never just name the command.
+  var SECRET_CMDS = [
+    ["ls", "see what's here"],
+    ["ls -a", "see what's here, including what's hiding"],
+    ["history", "what did the operator type last"],
+    ["secrets", "you're looking at it"],
+    ["games", "all work and no play"],
+    ["snake", "eat, grow, don't bite yourself"],
+    ["pong", "1972 called. it has a paddle."],
+    ["breakout", "bricks, a ball, and a wall that deserves it"],
+    ["guess", "i'm thinking of a number"],
+    ["sl", "a typo with a locomotive"],
+    ["vim", "an editor nobody leaves"],
+    ["hack", "what the movies think i do all day"],
+    ["rm -rf /", "the one command you're told never to run"],
+    ["fortune", "a cookie without the cookie"],
+    ["coffee", "ask the server for a hot drink"],
+    ["cowsay", "a farm animal with something to say"],
+    ["sudo", "ask nicely, as root"],
+    ["sudo rm honeypot", "retire the bait. with authority."],
+    ["cat honeypot.log", "read what the bait caught"],
+    ["format c:", "a dos-era way to ruin your afternoon"],
+    ["a:", "the drive that came before c:"],
+    ["cd", "try going somewhere"],
+    ["cat", "read a file. any file."],
+    ["echo", "say something. it says it back."],
+    ["pwd", "where exactly is here"],
+    ["touch", "make a file out of nothing"],
+    ["mkdir", "make a place to put things"],
+    ["chmod", "argue with permissions"],
+    ["date", "what day is it"],
+    ["weather", "check outside without going outside"]
+  ];
+  var SECRET_TRIGGERS = [
+    ["konami", "something involving arrow keys and the letters b, a", "the konami code"],
+    ["bezel", "the bezel isn't decorative", "five clicks on the bezel"],
+    ["logo", "the logo has a second name", "triple-click the logo (SENTINEL)"]
+  ];
+  // commands whose first run is the find. ls/cat/rm/format/secrets/sudo are handled specially.
+  var SIMPLE_SECRETS = {
+    games:1, snake:1, pong:1, breakout:1, guess:1, sl:1, vim:1, hack:1, fortune:1,
+    coffee:1, cowsay:1, "a:":1, cd:1, echo:1, pwd:1, touch:1, mkdir:1, chmod:1,
+    date:1, weather:1, history:1
+  };
+
+  function isSecretId(id){
+    for(var j = 0; j < SECRET_CMDS.length; j++){ if(SECRET_CMDS[j][0] === id) return true; }
+    for(var i = 0; i < SECRET_TRIGGERS.length; i++){ if(SECRET_TRIGGERS[i][0] === id) return true; }
+    return false;
+  }
+
+  function loadFound(){
+    var out = Object.create(null);
+    try{
+      var raw = localStorage.getItem(SECRETS_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      if(Array.isArray(arr)){
+        arr.forEach(function(k){ if(typeof k === 'string' && isSecretId(k)) out[k] = true; });
+      }
+    } catch(e){ /* blocked or corrupt storage: start fresh, in memory only */ }
+    return out;
+  }
+  var foundSecrets = loadFound();
+
+  function saveFound(){
+    try { localStorage.setItem(SECRETS_KEY, JSON.stringify(Object.keys(foundSecrets))); }
+    catch(e){ /* still tracked for this session */ }
+  }
+
+  function markFound(id){
+    if(ghostRunning || !isSecretId(id) || foundSecrets[id]) return;
+    foundSecrets[id] = true;
+    saveFound();
+  }
+
+  function markSecretsFor(cmd, args){
+    var a = (args || '').trim().toLowerCase();
+    if(hasOwn(SIMPLE_SECRETS, cmd)){ markFound(cmd); return; }
+    if(cmd === 'ls'){
+      markFound('ls');
+      if(isAllFlag(a)) markFound('ls -a');
+      return;
+    }
+    if(cmd === 'secrets'){
+      if(a !== '--reset') markFound('secrets');
+      return;
+    }
+    if(cmd === 'cat'){
+      markFound('cat');
+      var t = normPath(a);
+      if(t === '.bash_history') markFound('history');
+      else if(t === '.secrets') markFound('secrets');
+      else if(/honeypot/.test(t)) markFound('cat honeypot.log');
+      return;
+    }
+    if(cmd === 'rm'){
+      var r = a.replace(/\s+/g, ' ');
+      if(r === '-rf /' || r === '-rf/') markFound('rm -rf /');
+      return;
+    }
+    if(cmd === 'format'){
+      var f = a.replace(/\s+/g, '');
+      if(f === 'c:' || f === 'c') markFound('format c:');
+    }
+  }
+
+  // a normal-text lead plus a dim tail on one line, both via textContent.
+  function printHint(lead, hint){
+    var div = document.createElement('div');
+    div.className = 'line hint-row';
+    div.appendChild(document.createTextNode(lead));
+    var span = document.createElement('span');
+    span.className = 'dim';
+    span.textContent = hint;
+    div.appendChild(span);
+    output.appendChild(div);
+    scrollToBottom();
+  }
+
+  function printSecrets(){
+    var total = SECRET_CMDS.length + SECRET_TRIGGERS.length;
+    var count = 0;
+    SECRET_CMDS.forEach(function(c){ if(foundSecrets[c[0]]) count++; });
+    SECRET_TRIGGERS.forEach(function(t){ if(foundSecrets[t[0]]) count++; });
+
+    print("secrets: " + count + " of " + total + " found.");
+    print("");
+    // one secret per line. desktop: masked id, then the dim hint beside it.
+    // narrow: the hint drops to its own line, indented by .line.hint (style.css)
+    // so a wrapped hint keeps its indent instead of falling back to column 0.
+    var narrow = window.innerWidth < 700;
+    SECRET_CMDS.forEach(function(c){
+      if(foundSecrets[c[0]]){ print("  [x] " + c[0]); return; }
+      var mask = "  [ ] " + c[0].replace(/\S/g, '?');
+      if(narrow){ print(mask); print(c[1], "dim hint"); }
+      else printHint(padRight(mask, 25), c[1]);
+    });
+    SECRET_TRIGGERS.forEach(function(t){
+      if(foundSecrets[t[0]]) print("  [x] " + t[2]);
+      else if(narrow){ print("  [ ] ???"); print(t[1], "dim hint"); }
+      else printHint(padRight("  [ ] ???", 25), t[1]);
+    });
+    print("");
+    if(count === total){
+      print("all found. you've now read more of this shell than its author remembers writing.", "amber");
+    }
+    print("stored in this browser's localStorage. never leaves this machine. secrets --reset to forget.", "dim");
+  }
+
+  var unknownCount = 0;
+  function commandNotFound(word){
+    if(dosMode){ print("Bad command or file name", "dim"); return; }
+    print("sentinel: " + word + ": command not found", "dim");
+    unknownCount++;
+    if(unknownCount % 3 === 0) print("help has the public ones.", "dim");
+  }
+
   var commands = {
-    help: function(){
-      print("available commands:");
+    help: function(args){
+      var a = (args || '').trim().toLowerCase();
+      if(a === '-a' || a === '--all' || a === 'all' || a === 'secrets' || a === '--secrets'){
+        print("help only covers what's documented. undocumented things live where undocumented things always live.", "dim");
+        return;
+      }
+      print("public commands:");
       print("  whoami          who runs this thing");
       print("  neofetch        specs, but for a person");
-      print("  fleet           status of the homelab devices");
+      print("  fleet           what's in the homelab");
+      print("  ping <host>     poke a fleet device");
+      print("  stack           what it all runs on");
+      print("  now             what i'm working on");
       print("  theme           swap green / amber phosphor");
-      print("  games           list playable games");
+      print("  man <cmd>       the manual. someone should read it.");
       print("  clear           clear the screen");
       print("");
-      print("there's more where that came from. good luck.", "dim");
+      print("that's what's documented. the rest is hidden. you know how hidden files work.", "dim");
+    },
+    history: function(args){
+      if(/^-c\b/.test((args || '').trim())){
+        print("history: cleared. (it says that every time. see line 22.)", "dim");
+        return;
+      }
+      printOperatorHistory();
+    },
+    secrets: function(args){
+      if((args || '').trim().toLowerCase() === '--reset'){
+        foundSecrets = Object.create(null);
+        try { localStorage.removeItem(SECRETS_KEY); } catch(e){}
+        print("secrets: forgotten. this browser no longer remembers any of it.", "dim");
+        return;
+      }
+      printSecrets();
     },
     games: function(){
       print("available games:");
@@ -344,10 +627,19 @@
       print("  - picking the next homelab project worth writing up");
       print("  - slowly turning a fibonacci sequence into a scripture-encoding easter egg");
     },
-    theme: function(){
-      document.body.classList.toggle('theme-amber');
-      document.dispatchEvent(new Event('themechange'));
-      print(document.body.classList.contains('theme-amber') ? "phosphor: amber." : "phosphor: green.");
+    theme: function(args){
+      // same persistence as the titlebar button (theme.js)
+      var a = (args || '').trim().toLowerCase();
+      var name;
+      if(window.sentinelTheme){
+        name = (a === 'amber' || a === 'green') ? window.sentinelTheme.set(a) : window.sentinelTheme.toggle();
+      } else {
+        var root = document.documentElement;
+        root.classList.toggle('theme-amber', a ? a === 'amber' : !root.classList.contains('theme-amber'));
+        document.dispatchEvent(new Event('themechange'));
+        name = root.classList.contains('theme-amber') ? 'amber' : 'green';
+      }
+      print("phosphor: " + name + ".");
     },
     cowsay: function(msg){
       var text = (msg || "moo.").trim() || "moo.";
@@ -440,15 +732,13 @@
     },
     ls: function(args){
       var target = (args || '').trim();
-      if(target){
+      var showAll = isAllFlag(target);
+      if(target && !showAll && !/^-[a-z]+$/i.test(target)){
         print("ls: cannot access '" + target + "': it's a metaphor, not a filesystem.", "dim");
         return;
       }
-      print("regrets/", "dim");
-      print("side_projects/           (mostly abandoned)", "dim");
-      print("todo.txt                 (never opened)", "dim");
-      print("hopes.sh                 (not actually executable)", "dim");
-      print("honeypot.log             (permission denied, obviously)", "dim");
+      if(showAll) printListing(LS_DOTFILES);
+      printListing(LS_FILES);
     },
     cd: function(args){
       var target = (args || '').trim();
@@ -458,10 +748,10 @@
     cat: function(args){
       var target = (args || '').trim();
       if(!target){ print("usage: cat <file>", "dim"); return; }
-      if(/honeypot/i.test(target)){
-        print("cat: " + target + ": decommissioned. cowrie doesn't live here anymore.", "dim");
-        return;
-      }
+      var t = normPath(target);
+      if(t === '.bash_history'){ printOperatorHistory(); return; }
+      if(t === '.secrets'){ printSecrets(); return; }
+      if(/honeypot/.test(t)){ printHoneypotLog(); return; }
       print("cat: " + target + ": No such file or directory (it was never real)", "dim");
     },
     echo: function(args){
@@ -563,7 +853,7 @@
         knulli:   { ip: "10.20.34.150", ms: "12.4", note: "retro handheld, mid save-state. please hold." }
       };
       if(!name){ print("usage: ping <host>", "dim"); return; }
-      var d = devices[name];
+      var d = hasOwn(devices, name) ? devices[name] : null;
       if(!d){
         print("ping: cannot resolve " + args.trim() + ": Unknown host", "dim");
         return;
@@ -612,7 +902,10 @@
     },
     man: function(args){
       var manPages = {
-        help:     { name: "list available shell commands", synopsis: "help", desc: "Displays a list of commands this shell claims to support. Coverage is voluntary." },
+        help:     { name: "list available shell commands", synopsis: "help", desc: "Displays the documented commands. Coverage is voluntary." },
+        clear:    { name: "clear the terminal screen", synopsis: "clear", desc: "Clears the screen. The scrollback is gone. The shell remembers nothing, which is more than most can say." },
+        history:  { name: "print command history", synopsis: "history", desc: "Prints the operator's command history. Clearing it was attempted. See line 22." },
+        secrets:  { name: "list secrets found", synopsis: "secrets [--reset]", desc: "Lists what you've found, and hints at what you haven't." },
         whoami:   { name: "print the current user", synopsis: "whoami", desc: "Prints the identity of the user. Assumes the user is Michael. This assumption has never been wrong." },
         neofetch: { name: "display system information for a human", synopsis: "neofetch", desc: "Prints specs for a biological host instead of a machine. Uptime is measured in gpa." },
         fleet:    { name: "report homelab device status", synopsis: "fleet", desc: "Lists every device in the homelab and its status. All statuses are self-reported." },
@@ -636,7 +929,7 @@
         weather:  { name: "print the local forecast", synopsis: "weather", desc: "Reports the weather in Rexburg, ID. It is, statistically, cold." },
         sudo:     { name: "execute a command as root", synopsis: "sudo <command>", desc: "Attempts to run COMMAND as root. Permission is not, and will not be, granted." },
         man:      { name: "print the manual for a command", synopsis: "man <command>", desc: "Prints documentation for COMMAND that, statistically, no one asked for." },
-        ls:       { name: "list directory contents", synopsis: "ls", desc: "Lists files in the current directory. All of them are metaphors." },
+        ls:       { name: "list directory contents", synopsis: "ls [-a]", desc: "Lists files in the current directory. All of them are metaphors. The -a flag shows hidden files. Hidden, in the loosest sense." },
         cd:       { name: "change directory", synopsis: "cd <directory>", desc: "Attempts to change the working directory. There is nowhere else to go." },
         cat:      { name: "concatenate and print files", synopsis: "cat <file>", desc: "Prints the contents of FILE. FILE does not exist. Nothing here does." },
         echo:     { name: "print a line of text", synopsis: "echo [text]", desc: "Prints TEXT back at you. The one command here that actually works as advertised." },
@@ -655,7 +948,7 @@
       };
       var name = (args || '').trim().toLowerCase().split(' ')[0];
       if(!name){ print("What manual page do you want?", "dim"); return; }
-      var entry = manPages[name];
+      var entry = hasOwn(manPages, name) ? manPages[name] : null;
       if(!entry){ print("No manual entry for " + name, "dim"); return; }
       var header = name.toUpperCase() + "(1)";
       print(header + "                    Sentinel Manual                    " + header, "dim");
@@ -675,20 +968,42 @@
   function handleShell(raw){
     var trimmed = raw.trim();
     if(trimmed === ''){ return; }
-    if(trimmed.toLowerCase().indexOf('sudo') === 0){
+
+    // !N runs line N of the operator's history
+    var bang = trimmed.match(/^!(\d+)$/);
+    if(bang){
+      var n = parseInt(bang[1], 10);
+      if(n >= 1 && n <= OP_HISTORY.length){
+        print(OP_HISTORY[n - 1], "dim");
+        handleShell(OP_HISTORY[n - 1]);
+      } else {
+        print("sentinel: !" + bang[1] + ": event not found", "dim");
+      }
+      return;
+    }
+
+    if(/^sudo(\s|$)/i.test(trimmed)){
+      markFound('sudo');
       var sudoRest = trimmed.slice(4).trim().toLowerCase().replace(/\s+/g, ' ');
       if(sudoRest === 'rm honeypot'){
+        markFound('sudo rm honeypot');
         print("already done. see: my entire personality.", "amber");
         return;
       }
       print("Permission denied: nice try.", "red");
       return;
     }
-    var spaceIdx = trimmed.indexOf(' ');
-    var cmd = (spaceIdx === -1 ? trimmed : trimmed.slice(0, spaceIdx)).toLowerCase();
+    var spaceIdx = trimmed.search(/\s/);
+    var word = spaceIdx === -1 ? trimmed : trimmed.slice(0, spaceIdx);
+    var cmd = word.toLowerCase();
     var args = spaceIdx === -1 ? '' : trimmed.slice(spaceIdx + 1);
-    if(commands[cmd]){ commands[cmd](args); }
-    else { print("Bad command or file name", "dim"); }
+    // own properties only: __proto__, constructor, toString etc. are not commands
+    if(hasOwn(commands, cmd)){
+      markSecretsFor(cmd, args);
+      commands[cmd](args);
+    } else {
+      commandNotFound(word);
+    }
   }
 
   function handleGuess(raw){
@@ -727,7 +1042,7 @@
     try{
       fetch('/api/guestbook/' + encodeURIComponent(key), {
         method: 'DELETE',
-        headers: { 'X-Admin-Token': v }
+        headers: { 'Authorization': 'Bearer ' + v }
       })
         .then(function(res){
           return res.json().then(function(body){ return { ok: res.ok, body: body }; });
@@ -755,10 +1070,54 @@
     // anything else: stuck. nothing happens.
   }
 
+  /* ---------------- tab completion ---------------- */
+  var lastTabValue = null;
+
+  function completionCandidates(){
+    // everything, secrets included. admin tooling excluded.
+    return Object.keys(commands).concat(['sudo']).filter(function(c){
+      return c !== 'guestbook-admin';
+    }).sort();
+  }
+
+  function commonPrefix(list){
+    var p = list[0];
+    for(var i = 1; i < list.length; i++){
+      while(list[i].indexOf(p) !== 0) p = p.slice(0, -1);
+    }
+    return p;
+  }
+
+  // returns true if it handled the Tab. empty input, shift+tab, or anything past
+  // the first word is left alone so Tab still moves focus (no keyboard trap).
+  function handleTab(e){
+    var val = input.value;
+    if(e.shiftKey || !val.trim() || /\s/.test(val)) { lastTabValue = null; return false; }
+    e.preventDefault();
+    var word = val.toLowerCase();
+    var matches = completionCandidates().filter(function(c){ return c.indexOf(word) === 0; });
+    if(!matches.length){ lastTabValue = null; return true; }
+    if(matches.length === 1){ input.value = matches[0] + ' '; lastTabValue = null; return true; }
+    var common = commonPrefix(matches);
+    if(common.length > word.length){ input.value = common; lastTabValue = common; return true; }
+    if(lastTabValue === val){
+      print(matches.join('  '), "dim");
+      lastTabValue = null;
+    } else {
+      lastTabValue = val;
+    }
+    return true;
+  }
+
   input.addEventListener('keydown', function(e){
     wakeFromDormancy();
     resetIdleTimer();
     if(ghostTyping){ ghostTyping = false; input.value = ''; }
+    if(e.key === 'Tab'){
+      if(mode === 'shell') handleTab(e);
+      return;
+    }
+    lastTabValue = null;
     if(e.key === 'Enter'){
       var val = input.value;
       if(mode === 'shell'){
@@ -796,7 +1155,9 @@
   }
 
   /* ---------------- arcade (snake / pong / breakout share one canvas) ---------------- */
-  var arcadeWrap, arcadeCanvas, arcadeCtx, arcadeScoreEl;
+  var arcadeWrap, arcadeCanvas, arcadeCtx, arcadeScoreEl, arcadeQuitBtn;
+  var arcadeColors = { fg: '#39ff6a', accent: '#ffb300', bg: '#030503' };
+  var sawArrowKey = false; // an arrow keypress means a physical keyboard exists
   var snakeLoop, snakeState;
   var pongLoop, pongState;
   var breakoutLoop, breakoutState;
@@ -816,8 +1177,59 @@
     arcadeScoreEl.id = 'arcadeScore';
     arcadeScoreEl.textContent = 'score: 0';
     arcadeWrap.appendChild(arcadeScoreEl);
-    output.appendChild(arcadeWrap);
+    // visible exit for touch/mouse users (games used to exit on Escape only)
+    arcadeQuitBtn = document.createElement('button');
+    arcadeQuitBtn.type = 'button';
+    arcadeQuitBtn.id = 'arcadeQuit';
+    arcadeQuitBtn.textContent = '[esc] quit';
+    arcadeQuitBtn.addEventListener('click', exitCurrentGame);
+    arcadeWrap.appendChild(arcadeQuitBtn);
+    // a tap on the canvas also exits, so a touch device can never get stuck
+    arcadeCanvas.addEventListener('pointerdown', function(e){
+      if(e.pointerType === 'touch') exitCurrentGame();
+    });
     arcadeCtx = arcadeCanvas.getContext('2d');
+  }
+
+  // (re)attach at the bottom of the scrollback on every launch. `clear` empties
+  // #output, which used to leave the game drawing to a detached canvas.
+  function mountArcade(){
+    ensureArcade();
+    readArcadeColors();
+    output.appendChild(arcadeWrap);
+    arcadeWrap.style.display = 'flex';
+    arcadeCanvas.focus({ preventScroll: true });
+    arcadeWrap.scrollIntoView({ block: 'nearest' });
+  }
+
+  function readArcadeColors(){
+    var cs = getComputedStyle(document.documentElement);
+    arcadeColors.fg = cs.getPropertyValue('--green').trim() || '#39ff6a';
+    arcadeColors.accent = cs.getPropertyValue('--amber').trim() || '#ffb300';
+  }
+
+  document.addEventListener('themechange', function(){
+    readArcadeColors();
+    if(mode === 'snake' && snakeState) drawSnake();
+    else if(mode === 'pong' && pongState) drawPong();
+    else if(mode === 'breakout' && breakoutState) drawBreakout();
+  });
+
+  function noKeyboard(){
+    if(sawArrowKey || !window.matchMedia) return false;
+    return window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(any-pointer: fine)').matches;
+  }
+
+  function needsKeys(game){
+    if(!noKeyboard()) return false;
+    print(game + " needs arrow keys. this device doesn't have any.", "dim");
+    return true;
+  }
+
+  function exitCurrentGame(){
+    if(mode === 'snake') exitSnake();
+    else if(mode === 'pong') exitPong();
+    else if(mode === 'breakout') exitBreakout();
   }
 
   function stopAllArcadeLoops(){
@@ -837,12 +1249,11 @@
 
   /* ---- snake ---- */
   function startSnake(){
+    if(needsKeys('snake')) return;
     mode = 'snake';
     print("arrow keys to move, esc to quit. good luck.", "amber");
-    ensureArcade();
     stopAllArcadeLoops();
-    arcadeWrap.style.display = 'flex';
-    arcadeCanvas.focus();
+    mountArcade();
     resetSnake();
     snakeLoop = setInterval(stepSnake, 110);
   }
@@ -895,11 +1306,11 @@
 
   function drawSnake(){
     var c = snakeState.cell;
-    arcadeCtx.fillStyle = '#030503';
+    arcadeCtx.fillStyle = arcadeColors.bg;
     arcadeCtx.fillRect(0,0,arcadeCanvas.width, arcadeCanvas.height);
-    arcadeCtx.fillStyle = '#ffb300';
+    arcadeCtx.fillStyle = arcadeColors.accent;
     arcadeCtx.fillRect(snakeState.food.x*c, snakeState.food.y*c, c-1, c-1);
-    arcadeCtx.fillStyle = '#39ff6a';
+    arcadeCtx.fillStyle = arcadeColors.fg;
     snakeState.snake.forEach(function(s,i){
       arcadeCtx.globalAlpha = i===0 ? 1 : 0.75;
       arcadeCtx.fillRect(s.x*c, s.y*c, c-1, c-1);
@@ -913,13 +1324,12 @@
 
   /* ---- pong ---- */
   function startPong(){
+    if(needsKeys('pong')) return;
     mode = 'pong';
     print("up/down (or w/s) to move, esc to quit. first to 5 wins.", "amber");
-    ensureArcade();
     stopAllArcadeLoops();
     heldKeys = {};
-    arcadeWrap.style.display = 'flex';
-    arcadeCanvas.focus();
+    mountArcade();
     resetPong();
     pongLoop = setInterval(stepPong, 16);
   }
@@ -991,18 +1401,20 @@
 
   function drawPong(){
     var s = pongState;
-    arcadeCtx.fillStyle = '#030503';
+    arcadeCtx.fillStyle = arcadeColors.bg;
     arcadeCtx.fillRect(0, 0, s.w, s.h);
-    arcadeCtx.strokeStyle = 'rgba(57,255,106,0.25)';
+    arcadeCtx.strokeStyle = arcadeColors.fg;
+    arcadeCtx.globalAlpha = 0.25;
     arcadeCtx.setLineDash([4,6]);
     arcadeCtx.beginPath();
     arcadeCtx.moveTo(s.w/2, 0); arcadeCtx.lineTo(s.w/2, s.h);
     arcadeCtx.stroke();
     arcadeCtx.setLineDash([]);
-    arcadeCtx.fillStyle = '#39ff6a';
+    arcadeCtx.globalAlpha = 1;
+    arcadeCtx.fillStyle = arcadeColors.fg;
     arcadeCtx.fillRect(8, s.aiY, s.paddleW, s.paddleH);
     arcadeCtx.fillRect(s.w - 14, s.playerY, s.paddleW, s.paddleH);
-    arcadeCtx.fillStyle = '#ffb300';
+    arcadeCtx.fillStyle = arcadeColors.accent;
     arcadeCtx.fillRect(s.ballX - 4, s.ballY - 4, 8, 8);
   }
 
@@ -1014,13 +1426,12 @@
 
   /* ---- breakout ---- */
   function startBreakout(){
+    if(needsKeys('breakout')) return;
     mode = 'breakout';
     print("left/right (or a/d) to move, esc to quit. clear the bricks.", "amber");
-    ensureArcade();
     stopAllArcadeLoops();
     heldKeys = {};
-    arcadeWrap.style.display = 'flex';
-    arcadeCanvas.focus();
+    mountArcade();
     resetBreakout();
     breakoutLoop = setInterval(stepBreakout, 16);
   }
@@ -1105,17 +1516,17 @@
 
   function drawBreakout(){
     var s = breakoutState;
-    arcadeCtx.fillStyle = '#030503';
+    arcadeCtx.fillStyle = arcadeColors.bg;
     arcadeCtx.fillRect(0, 0, s.w, s.h);
-    var colors = ['#ffb300', '#39ff6a'];
+    var colors = [arcadeColors.accent, arcadeColors.fg];
     s.bricks.forEach(function(b, i){
       if(!b.alive) return;
       arcadeCtx.fillStyle = colors[Math.floor(i / 8) % 2];
       arcadeCtx.fillRect(b.x, b.y, b.w - 1, b.h - 1);
     });
-    arcadeCtx.fillStyle = '#39ff6a';
+    arcadeCtx.fillStyle = arcadeColors.fg;
     arcadeCtx.fillRect(s.paddleX, s.h - 16, s.paddleW, s.paddleH);
-    arcadeCtx.fillStyle = '#ffb300';
+    arcadeCtx.fillStyle = arcadeColors.accent;
     arcadeCtx.fillRect(s.ballX - 4, s.ballY - 4, 8, 8);
   }
 
@@ -1124,6 +1535,8 @@
   }
 
   document.addEventListener('keydown', function(e){
+    if(typeof e.key !== 'string') return;
+    if(e.key.indexOf('Arrow') === 0) sawArrowKey = true;
     if(mode !== 'snake' && mode !== 'pong' && mode !== 'breakout') return;
     var key = e.key.toLowerCase();
 
@@ -1158,8 +1571,9 @@
   });
 
   document.addEventListener('keyup', function(e){
+    if(typeof e.key !== 'string') return;
     var key = e.key.toLowerCase();
-    if(heldKeys.hasOwnProperty(key)) heldKeys[key] = false;
+    if(hasOwn(heldKeys, key)) heldKeys[key] = false;
   });
 
   /* ---------------- konami code ---------------- */
@@ -1167,6 +1581,7 @@
   var konamiPos = 0;
 
   document.addEventListener('keydown', function(e){
+    if(typeof e.key !== 'string') return;
     var key = e.key.toLowerCase();
     if(key === konamiSeq[konamiPos]){
       konamiPos++;
@@ -1180,6 +1595,7 @@
   });
 
   function konamiFireworks(){
+    markFound('konami');
     if(reduceMotion){
       print("** konami code accepted **", "amber");
       return;
@@ -1224,6 +1640,7 @@
     bezelClicks.push(now);
     if(bezelClicks.length >= 5){
       bezelClicks = [];
+      markFound('bezel');
       triggerGlitch();
     }
   });
@@ -1235,5 +1652,7 @@
   }
 
   startShell();
+
+  try { console.log("sentinel: devtools open. respect. help is the public list. ls -a is the other one."); } catch(e){}
 
 })();

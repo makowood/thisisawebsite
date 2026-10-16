@@ -7,7 +7,7 @@ set -euo pipefail
 
 STAGE="$HOME/guestbook-staging"
 APP=/opt/guestbook
-FILES="server.js wordlist.json package.json README.md guestbook.service"
+FILES="server.js wordlist.json package.json package-lock.json README.md guestbook.service"
 DRY=0
 [ "${1:-}" = "-n" ] && DRY=1
 
@@ -28,9 +28,10 @@ done
 if [ -z "$changed" ]; then echo "nothing changed."; exit 0; fi
 [ $DRY -eq 1 ] && exit 0
 
-case "$changed" in *package.json*)
-  echo "package.json changed, reinstalling deps"
-  (cd "$APP" && sudo npm install --omit=dev --ignore-scripts)
+case "$changed" in *package.json*|*package-lock.json*)
+  # npm ci installs exactly what package-lock.json pins (fails if the two disagree)
+  echo "package.json / package-lock.json changed, reinstalling deps"
+  (cd "$APP" && sudo npm ci --omit=dev --ignore-scripts)
 esac
 
 case "$changed" in *guestbook.service*)

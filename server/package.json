@@ -8,6 +8,6 @@
     "start": "node server.js"
   },
   "optionalDependencies": {
-    "bad-words": "^3.0.4"
+    "bad-words": "3.0.4"
   }
 }

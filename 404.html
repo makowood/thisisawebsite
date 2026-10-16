@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>404 — thisisawebsite.fyi</title>
 <meta name="description" content="Page not found — kernel panic on sentinel.local.">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/style.css">
+<script src="/theme.js"></script>
 </head>
 <body>
 
@@ -18,18 +19,19 @@
 <div class="crt">
   <div class="screen">
     <div class="titlebar">
-      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span><span class="dot" aria-hidden="true"></span>
+      <button type="button" class="theme-toggle" aria-pressed="false" title="swap phosphor colour">phosphor: green</button>
       <span class="path">root@sentinel : ~/404</span>
     </div>
     <nav class="tabnav">
-      <a href="index.html">~/</a>
-      <a href="resume.html">resume</a>
-      <a href="projects.html">projects</a>
-      <a href="uses.html">uses</a>
-      <a href="guestbook.html">guestbook</a>
+      <a href="/">~/</a>
+      <a href="/resume.html">resume</a>
+      <a href="/projects.html">projects</a>
+      <a href="/uses.html">uses</a>
+      <a href="/guestbook.html">guestbook</a>
     </nav>
     <div class="page panic">
-      <h1>segmentation fault <span class="dim">(core dumped)</span></h1>
+      <h1>kernel panic <span class="dim">- not syncing</span></h1>
       <p class="subtitle">404 — that page isn't mapped into this address space</p>
 
       <pre class="panic-dump">Kernel panic - not syncing: Attempted to access nonexistent page
@@ -39,17 +41,19 @@ Call Trace:
  ? page_fault+0x1a/0x40
  ? route_lookup+0x0/0x1
  ? handle_request+0x2a4/0x2a4
+ ? all_your_base+0x0/0x404
+ ? ls_hidden+0x2e/0x41  [try: ls -a]
  &lt;/TASK&gt;
 ---[ end Kernel panic - not syncing: 404 NOT FOUND ]---</pre>
 
       <p>whatever you were looking for either moved, never existed, or got caught by the honeypot
       before it could load.</p>
 
-      <a class="back" href="index.html">&larr; reboot to ~/</a>
+      <a class="back" href="/">&larr; reboot to ~/</a>
     </div>
   </div>
 </div>
 
-<script src="rain.js"></script>
+<script src="/rain.js"></script>
 </body>
 </html>

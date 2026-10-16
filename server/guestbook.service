@@ -47,7 +47,12 @@ SystemCallErrorNumber=EPERM
 # Only Caddy on localhost should ever talk to this.
 IPAddressAllow=localhost
 IPAddressDeny=any
+RemoveIPC=true
+# resource ceilings: a runaway process gets killed instead of starving Caddy
+MemoryMax=256M
+TasksMax=32
 # MemoryDenyWriteExecute is deliberately omitted — it breaks V8's JIT.
+# ProcSubset=pid is omitted too — V8 can read /proc/cpuinfo on ARM for CPU feature detection.
 
 [Install]
 WantedBy=multi-user.target
